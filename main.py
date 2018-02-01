@@ -8,9 +8,6 @@ from mqttwrapper import run_script
 RECEIVER_ADDR = os.environ.get('RECEIVER_ADDR')
 RECEIVER_VOLUME = float(os.environ.get('RECEIVER_VOLUME', -60.0))
 
-MQTT_TOPICS = os.environ['MQTT_TOPICS'].split(",")
-MQTT_BROKER = os.environ['MQTT_BROKER']
-
 
 def message_callback(topic: str, payload: bytes, rxv_client: rxv.RXV):
     if payload == b"off":
@@ -37,7 +34,7 @@ def setup_rxv():
 
 def main():
     rxv_client = setup_rxv()
-    run_script(MQTT_BROKER, MQTT_TOPICS, message_callback, rxv_client=rxv_client)
+    run_script(message_callback, rxv_client=rxv_client)
 
 
 if __name__ == '__main__':

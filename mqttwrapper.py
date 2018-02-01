@@ -1,3 +1,4 @@
+import os
 import asyncio
 
 from hbmqtt.client import MQTTClient, ClientException
@@ -20,5 +21,10 @@ async def mqtt_loop(broker, topics, callback, **kwargs):
         raise
 
 
-def run_script(broker, topics, callback, **kwargs):
+def run_script(callback, broker=None, topics=None, **kwargs):
+    if not broker:
+        broker = os.environ['MQTT_BROKER']
+    if not topics:
+        topics = os.environ['MQTT_TOPICS'].split(",")
+
     asyncio.get_event_loop().run_until_complete(mqtt_loop(broker, topics, callback, **kwargs))
