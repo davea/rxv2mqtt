@@ -36,11 +36,13 @@ async def mqtt_loop():
 
 async def handle_message(topic: str, payload: bytes):
     if payload == b"off":
-        print("Switching off")
-        rxv_client.on = False
+        # Don't switch off if another source is selected.
+        if rxv_client.input == 'NET RADIO':
+            print("Switching off")
+            rxv_client.on = False
     else:
         station = payload.decode("utf-8")
-        volume = min(RECEIVER_VOLUME, -45) # no loud surprises
+        volume = min(RECEIVER_VOLUME, -45.0) # no loud surprises
         print(f"Playing {station} at {volume}dB")
         rxv_client.on = True
         rxv_client.net_radio(station)
