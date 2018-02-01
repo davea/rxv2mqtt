@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 import os
-import asyncio
-
-from hbmqtt.client import MQTTClient, ClientException
-from hbmqtt.mqtt.constants import QOS_0
 
 import rxv
+
+from mqttwrapper import run_script
 
 RECEIVER_ADDR = os.environ.get('RECEIVER_ADDR')
 RECEIVER_VOLUME = float(os.environ.get('RECEIVER_VOLUME', -60.0))
@@ -13,28 +11,8 @@ RECEIVER_VOLUME = float(os.environ.get('RECEIVER_VOLUME', -60.0))
 MQTT_TOPICS = os.environ['MQTT_TOPICS'].split(",")
 MQTT_BROKER = os.environ['MQTT_BROKER']
 
-rxv_client = None
 
-
-async def mqtt_loop():
-    topics = [(topic, QOS_0) for topic in MQTT_TOPICS]
-    client = MQTTClient()
-    await client.connect(MQTT_BROKER)
-    await client.subscribe(topics)
-    try:
-        while True:
-            message = await client.deliver_message()
-            packet = message.publish_packet
-            topic = packet.variable_header.topic_name
-            payload = bytes(packet.payload.data)
-            await handle_message(topic, payload)
-        await client.unsubscribe(topics)
-        await client.disconnect()
-    except ClientException:
-        raise
-
-
-async def handle_message(topic: str, payload: bytes):
+def message_callback(topic: str, payload: bytes, rxv_client: rxv.RXV):
     if payload == b"off":
         # Don't switch off if another source is selected.
         if rxv_client.input == 'NET RADIO':
@@ -50,21 +28,16 @@ async def handle_message(topic: str, payload: bytes):
 
 
 def setup_rxv():
-    global rxv_client
     if RECEIVER_ADDR:
         ctrl_url = f"http://{RECEIVER_ADDR}:80/YamahaRemoteControl/ctrl"
-        rxv_client = rxv.RXV(ctrl_url)
+        return rxv.RXV(ctrl_url)
     else:
-        rxv_client = rxv.find()[0]
-
-
-async def main_loop():
-    setup_rxv()
-    await mqtt_loop()
+        return rxv.find()[0]
 
 
 def main():
-    asyncio.get_event_loop().run_until_complete(main_loop())
+    rxv_client = setup_rxv()
+    run_script(MQTT_BROKER, MQTT_TOPICS, message_callback, rxv_client=rxv_client)
 
 
 if __name__ == '__main__':
