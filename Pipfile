@@ -9,6 +9,7 @@ name = "pypi"
 
 rxv = "*"
 hbmqtt = "*"
+paho-mqtt = "*"
 
 
 [dev-packages]
