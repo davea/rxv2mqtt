@@ -3,7 +3,7 @@ import os
 
 import rxv
 
-from mqttwrapper import run_script
+from mqttwrapper.hbmqtt_backend import run_script
 
 RECEIVER_ADDR = os.environ.get('RECEIVER_ADDR')
 RECEIVER_VOLUME = float(os.environ.get('RECEIVER_VOLUME', -60.0))

@@ -6,7 +6,7 @@ from hbmqtt.mqtt.constants import QOS_0
 
 async def mqtt_loop(broker, topics, callback, **kwargs):
     client = MQTTClient()
-    await client.connect(broker)
+    await client.connect(broker, cleansession=True)
     await client.subscribe([(topic, QOS_0) for topic in topics])
     try:
         while True:
@@ -15,8 +15,8 @@ async def mqtt_loop(broker, topics, callback, **kwargs):
             topic = packet.variable_header.topic_name
             payload = bytes(packet.payload.data)
             callback(topic, payload, **kwargs)
-        await client.unsubscribe(topics)
-        await client.disconnect()
+        # await client.unsubscribe(topics)
+        # await client.disconnect()
     except ClientException:
         raise
 
