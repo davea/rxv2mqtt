@@ -8,6 +8,7 @@ name = "pypi"
 [packages]
 
 rxv = "*"
+mqttwrapper = "*"
 
 
 [dev-packages]
