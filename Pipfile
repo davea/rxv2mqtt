@@ -8,8 +8,6 @@ name = "pypi"
 [packages]
 
 rxv = "*"
-hbmqtt = "*"
-paho-mqtt = "*"
 
 
 [dev-packages]
