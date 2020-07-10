@@ -1,23 +1,27 @@
 #!/usr/bin/env python
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import rxv
 
 from mqttwrapper import run_script
 
-RECEIVER_ADDR = os.environ.get('RECEIVER_ADDR')
-RECEIVER_VOLUME = float(os.environ.get('RECEIVER_VOLUME', -60.0))
+RECEIVER_ADDR = os.environ.get("RECEIVER_ADDR")
+RECEIVER_VOLUME = float(os.environ.get("RECEIVER_VOLUME", -60.0))
 
 
-def message_callback(topic: str, payload: bytes, rxv_client: rxv.RXV):
+def message_callback(topic: str, payload: bytes, rxv_client):
     if payload == b"off":
         # Don't switch off if another source is selected.
-        if rxv_client.input == 'NET RADIO':
+        if rxv_client.input == "NET RADIO":
             print("Switching off")
             rxv_client.on = False
     else:
         station = payload.decode("utf-8")
-        volume = min(RECEIVER_VOLUME, -45.0) # no loud surprises
+        volume = min(RECEIVER_VOLUME, -50.0)  # no loud surprises
         print(f"Playing {station} at {volume}dB")
         rxv_client.on = True
         rxv_client.net_radio(station)
@@ -34,8 +38,8 @@ def setup_rxv():
 
 def main():
     rxv_client = setup_rxv()
-    run_script(message_callback, rxv_client=rxv_client)
+    run_script(message_callback, rxv_client=rxv_client, ignore_retained=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
